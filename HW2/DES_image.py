@@ -8,7 +8,6 @@ Due Date: 2/4/2021
 #!/usr/bin/env python3
 
 ### hw2_starter.py
-#All code besides main was copied from the lecture notes, some modifications were made but mostly it is the exact same as the notes
 
 import sys
 from BitVector import *
@@ -38,33 +37,34 @@ def encrypt(inFile, encryptionKey):
                 bitvec = RE + newRE
             finalString = finalString + RE + LE
     return finalString
+'''
+            now comes the hard part --- the substition boxes
 
-def decrypt(inFile, encryptionKey):
-    key = get_encryption_key(encryptionKey)
-    round_key = generate_round_keys(key)[::-1]
-    inputFile = open(inFile)
-    bv = BitVector(hexstring = inputFile.read())
-    finalString = BitVector(size = 0)
-    count = 0
-    while (count < bv.size):
-        bitvec = bv[count:count+63]
-        if len(bitvec) <= 64:
-            temp = BitVector(intVal = 0, size = 64-len(bitvec))
-            bitvec = bitvec + temp
-        if bitvec.size <= count:
-            for i in range(0,16):  
-                [LE, RE] = bitvec.divide_into_two()
-                newRE = RE.permute(expansion_permutation)
-                out_xor = newRE ^ round_key[i]
-                RE_modified = substitute(out_xor)
-                rightHalf = RE_modified.permute(pBoxPerm)
-                newRE = rightHalf ^ LE
-                bitvec = RE + newRE
-            finalString = finalString + RE + LE
-        count += 64
-    final = finalString.get_bitvector_in_ascii()
-    print(final)
-    return finalString
+            Let's say after the substitution boxes and another
+            permutation (P in Section 3.3.4), the output for RE is
+            RE_modified.
+
+            When you join the two halves of the bit string
+            again, the rule to follow (from Fig. 4 in page 21) is
+            either
+
+            final_string = RE followed by (RE_modified xored with LE)
+
+            or
+
+            final_string = LE followed by (LE_modified xored with RE)
+
+            depending upon whether you prefer to do the substitutions
+            in the right half (as shown in Fig. 4) or in the left
+            half.
+
+            The important thing to note is that the swap between the
+            two halves shown in Fig. 4 is essential to the working
+            of the algorithm even in a single-round implementation
+            of the cipher, especially if you want to use the same
+            algorithm for both encryption and decryption (see Fig.
+            3 page 15). The two rules shown above include this swap.
+            '''
 
 
 key_permutation_1 = [56,48,40,32,24,16,8,0,57,49,41,33,25,17,
@@ -74,11 +74,23 @@ key_permutation_1 = [56,48,40,32,24,16,8,0,57,49,41,33,25,17,
 
 def get_encryption_key(encryptionKey):
     key = encryptionKey
+    # while True:
+    #     if sys.version_info[0] == 3:
+    #         key = input("Enter a string of 8 characters for the key: ")
+    #     else:
+    #         key = raw_input("Enter a string of 8 characters for the key: ")
+    #     if len(key) != 8:
+    #         print("\nKey generation needs 8 characters exactly.  Try again.\n")
+    #         continue
+    #     else:
+    #         break
     key = BitVector(textstring = key)
     key = key.permute(key_permutation_1)
     return key
 
-
+# key = get_encryption_key()
+# print("Here is the 56-bit encryption key generated from your input:\n")
+# print(key)
 
 key_permutation_2 = [13,16,10,23,0,4,2,27,14,5,20,9,22,18,11,
                       3,25,7,15,6,26,19,12,1,40,51,30,36,46,
@@ -87,7 +99,7 @@ key_permutation_2 = [13,16,10,23,0,4,2,27,14,5,20,9,22,18,11,
 
 shifts_for_round_key_gen = [1,1,2,2,2,2,2,2,1,2,2,2,2,2,2,1]
 
-
+#This function needs to be modified, per the "Other py files" discussion on Brightspace
 def generate_round_keys(encryption_key):
     round_keys = []
     key = encryption_key.deep_copy()
@@ -100,6 +112,14 @@ def generate_round_keys(encryption_key):
         round_key = key.permute(key_permutation_2)
         round_keys.append(round_key)
     return round_keys
+
+
+
+# encryption_key = get_encryption_key()
+# round_keys = generate_round_keys(encryption_key)
+# print("\nHere are the 16 round keys:\n")
+# for round_key in round_keys:
+#     print(round_key)
 
 
 
@@ -158,10 +178,24 @@ def substitute( expanded_half_block ):
         output[sindex*4:sindex*4+4] = BitVector(intVal = s_boxes[sindex][row][column], size = 4)
     return output        
 
+# For the purpose of this illustration, let's just make up the right-half of a 
+# 64-bit DES bit block:
+# right_half_32bits = BitVector( intVal = 800000700, size = 32 )
+
+# Now we need to expand the 32-bit block into 48 bits:
+# right_half_with_expansion_permutation = right_half_32bits.permute( expansion_permutation ) 
+
+# print "expanded right_half_32bits: ", right_half_with_expansion_permutation
+
+# The following statement takes the 48 bits back down to 32 bits after carrying
+# out S-box based substitutions:
+# output = substitute(right_half_with_expansion_permutation)
+# print output
+
 
 
 if __name__ == '__main__':
-    if len(sys.argv) != 5:
+    if len(sys.argv) != 4:
         sys.exit('Incorrect number of arguments, please try again')
     if sys.argv[1] == '-e':
         inFileName = sys.argv[2]
@@ -174,17 +208,6 @@ if __name__ == '__main__':
         outFile.write(output.get_hex_string_from_bitvector())
         outFile.close()
         encryptionKeyFile.close()
-    if sys.argv[1] == '-d':
-        inFileName = sys.argv[2]
-        encryptionKeyFile = sys.argv[3]
-        encryptionKeyFile = open(encryptionKeyFile)
-        encryptionKey = encryptionKeyFile.read()
-        output = decrypt(inFileName, encryptionKey)
-        outFile = sys.argv[4]
-        outFile = open(outFile, 'w')
-        #output.write_to_file(outFile)
-        output1 = str(output)
-        outFile.write(output1)
-        #outFile.write(output.get_ascii_from_bitvector())
-        outFile.close()
-        encryptionKeyFile.close()
+
+    
+    
