@@ -88,6 +88,8 @@ def decrypt(inFile, encryptionKey):
                 bitvec = RE + newRE
             finalString = finalString + RE + LE
         count += 64
+    final = finalString.get_bitvector_in_ascii()
+    print(final)
     return finalString
 
 
@@ -239,8 +241,11 @@ if __name__ == '__main__':
         encryptionKey = encryptionKeyFile.read()
         output = decrypt(inFileName, encryptionKey)
         outFile = sys.argv[4]
-        outFile = open(outFile, 'wb')
-        output.write_to_file(outFile)
+        outFile = open(outFile, 'w')
+        #output.write_to_file(outFile)
+        output1 = str(output)
+        outFile.write(output1)
+        #outFile.write(output.get_ascii_from_bitvector())
         outFile.close()
         encryptionKeyFile.close()
     
