@@ -18,25 +18,21 @@ pBoxPerm = [15,6,19,20,28,11,27,16,0,14,22,25,4,17,30,9,1,7,23,13,31,26,2,8,18,1
 
 def encrypt(inFile, encryptionKey):
     key = get_encryption_key(encryptionKey)
-    round_key = generate_round_keys(key)
+    round_key = generate_round_keys( key )
     bv = BitVector(filename = inFile)
-    finalString = BitVector(size = 0)
     while (bv.more_to_read):
-        bitvec = bv.read_bits_from_file(64)
-        if len(bitvec) < 64:
-            temp = BitVector(intVal = 0, size = 64-len(bitvec))
-            bitvec = bitvec + temp
+        bitvec = bv.read_bits_from_file( 64 )
         if bitvec.size > 0:
-            for i in range(0,16):  
-                [LE, RE] = bitvec.divide_into_two()
-                newRE = RE.permute(expansion_permutation)
-                out_xor = newRE ^ round_key[i]
-                RE_modified = substitute(out_xor)
-                rightHalf = RE_modified.permute(pBoxPerm)
-                newRE = rightHalf ^ LE
-                bitvec = RE + newRE
-            finalString = finalString + RE + LE
+            [LE, RE] = bitvec.divide_into_two()
+            newRE = RE.permute( expansion_permutation )
+            out_xor = newRE.bv_xor(round_key)
+            RE_modified = substitute(out_xor)
+            rightHalf = RE_modified.permute(pBoxPerm)
+            finalString = rightHalf
+            newRE = newRE.bv_xor(LE)
+    
     return finalString
+
 '''
             now comes the hard part --- the substition boxes
 
@@ -65,31 +61,6 @@ def encrypt(inFile, encryptionKey):
             algorithm for both encryption and decryption (see Fig.
             3 page 15). The two rules shown above include this swap.
             '''
-def decrypt(inFile, encryptionKey):
-    key = get_encryption_key(encryptionKey)
-    round_key = generate_round_keys(key)[::-1]
-    inputFile = open(inFile)
-    bv = BitVector(hexstring = inputFile.read())
-    finalString = BitVector(size = 0)
-    count = 0
-    while (count < bv.size):
-        bitvec = bv[count:count+63]
-        if len(bitvec) <= 64:
-            temp = BitVector(intVal = 0, size = 64-len(bitvec))
-            bitvec = bitvec + temp
-        if bitvec.size <= count:
-            for i in range(0,16):  
-                [LE, RE] = bitvec.divide_into_two()
-                newRE = RE.permute(expansion_permutation)
-                out_xor = newRE ^ round_key[i]
-                RE_modified = substitute(out_xor)
-                rightHalf = RE_modified.permute(pBoxPerm)
-                newRE = rightHalf ^ LE
-                bitvec = RE + newRE
-            finalString = finalString + RE + LE
-        count += 64
-    return finalString
-
 
 key_permutation_1 = [56,48,40,32,24,16,8,0,57,49,41,33,25,17,
                       9,1,58,50,42,34,26,18,10,2,59,51,43,35,
@@ -115,6 +86,14 @@ def get_encryption_key(encryptionKey):
 # key = get_encryption_key()
 # print("Here is the 56-bit encryption key generated from your input:\n")
 # print(key)
+
+
+
+
+key_permutation_1 = [56,48,40,32,24,16,8,0,57,49,41,33,25,17,
+                      9,1,58,50,42,34,26,18,10,2,59,51,43,35,
+                     62,54,46,38,30,22,14,6,61,53,45,37,29,21,
+                     13,5,60,52,44,36,28,20,12,4,27,19,11,3]
 
 key_permutation_2 = [13,16,10,23,0,4,2,27,14,5,20,9,22,18,11,
                       3,25,7,15,6,26,19,12,1,40,51,30,36,46,
@@ -221,27 +200,10 @@ def substitute( expanded_half_block ):
 if __name__ == '__main__':
     if len(sys.argv) != 5:
         sys.exit('Incorrect number of arguments, please try again')
-    if sys.argv[1] == '-e':
-        inFileName = sys.argv[2]
-        encryptionKeyFile = sys.argv[3]
-        encryptionKeyFile = open(encryptionKeyFile)
-        encryptionKey = encryptionKeyFile.read()
-        output = encrypt(inFileName, encryptionKey)
-        outFile = sys.argv[4]
-        outFile = open(outFile, 'w')
-        outFile.write(output.get_hex_string_from_bitvector())
-        outFile.close()
-        encryptionKeyFile.close()
-    if sys.argv[1] == '-d':
-        inFileName = sys.argv[2]
-        encryptionKeyFile = sys.argv[3]
-        encryptionKeyFile = open(encryptionKeyFile)
-        encryptionKey = encryptionKeyFile.read()
-        output = decrypt(inFileName, encryptionKey)
-        outFile = sys.argv[4]
-        outFile = open(outFile, 'wb')
-        output.write_to_file(outFile)
-        outFile.close()
-        encryptionKeyFile.close()
-    
-    
+        
+    inFileName = sys.argv[2]
+    encryptionKeyFile = sys.argv[3]
+    encryptionKeyFile = open(encryptionKeyFile)
+    encryptionKey = encryptionKeyFile.read()
+    output = encrypt(inFileName, encryptionKey)
+    print(output)
