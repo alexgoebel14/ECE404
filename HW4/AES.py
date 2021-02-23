@@ -415,28 +415,20 @@ if __name__ == '__main__':
                     
                     
             #14 rounds of AES decryption
-            for j in range(0,1):
+            for j in range(14):
                 outputBlock = invShiftRows(state_array)
                 output2 = invSubBytes(outputBlock)
                 output3 = addRoundKey(round_keys[13-j], output2)
                 state_array = gen_state_array(output3)
                 if j != 13:
                     output4 = invMixColumns(state_array)
-                    tempVar = BitVector(size=0)
-                    for x in range(4):
-                        for y in range(4):
-                            tempVar += output4[x][y]
-                    print(tempVar.get_bitvector_in_hex())
-                else:
-                    output4 = addRoundKey(round_keys[j+1], output2)
+                    state_array = output4
                                 
-                state_array = gen_state_array(output4)
-                                
-                #write output4 to the outfile or add to one var to create one big var to output after all loops are done
-                for u in range(4):
-                    for v in range(4):
-                        outFile.write(state_array[u][v].get_bitvector_in_hex())
-                count+= 128                        
+            #write output4 to the outfile or add to one var to create one big var to output after all loops are done
+            for u in range(4):
+                for v in range(4):
+                    outFile.write(state_array[u][v].get_bitvector_in_ascii())
+            count+= 128                        
                                         
                 
         
