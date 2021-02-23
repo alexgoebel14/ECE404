@@ -122,7 +122,7 @@ def gen_state_array(inputBlock):
 def subBytes(stateArray):
     for i in range(4):
         for j in range(4):
-            stateArray[i][j] = BitVector(intVal=subBytesTable[int(stateArray[i][j])])
+            stateArray[i][j] = BitVector(intVal=subBytesTable[int(stateArray[i][j])], size = 8)
 
     return stateArray
 
@@ -175,16 +175,10 @@ def mixColumns(stateArray):
 
 
 def addRoundKey(key_words, state_array):
-    temp = BitVector(size=0)
     for i in range(4):
         for j in range(4):
             state_array[i][j] ^= key_words[i][8 * j:8 + (8 * j)]
             
-            
-    for x in range(4):
-        for y in range(4):
-            temp += state_array[x][y]
-    print(temp)
     return state_array
     
     
@@ -228,13 +222,13 @@ if __name__ == '__main__':
             for j in range(0,1):
                 outputBlock = subBytes(state_array)
                 test = BitVector(size=0)
+                output2 = shiftRows(outputBlock)
                 for x in range(4):
                     for y in range(4):
-                        test += outputBlock[x][y]
+                        test += output2[x][y]
                 print("This is my outputblock: " , test)
-                output2 = shiftRows(outputBlock)
                 output3 = mixColumns(output2)
-                output4 = addRoundKey(output3)
+                #output4 = addRoundKey(output3)
         #write output4 to the outfile or add to one var to create one big var to output after all loops are done
         finalOutput += output4
         
