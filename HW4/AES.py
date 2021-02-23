@@ -386,10 +386,12 @@ if __name__ == '__main__':
             for j in range(0,1):
                 outputBlock = invShiftRows(state_array)
                 output2 = invSubBytes(outputBlock)
+                output3 = addRoundKey(round_keys[13-j], output2)
+                state_array = gen_state_array(output3)
                 tempVar = BitVector(size=0)
                 for x in range(4):
                     for y in range(4):
-                        tempVar += output2[x][y]
+                        tempVar += state_array[x][y]
                 print(tempVar.get_bitvector_in_hex())
                 if j != 13:
                     output3 = mixColumns(output2)
