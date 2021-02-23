@@ -27,7 +27,7 @@ def key_schedule_main(key_bv):
         keyword_in_ints = []
         for i in range(4):
             keyword_in_ints.append(word[i*8:i*8+8].intValue())
-        if word_index % 4 == 0: print("\n")
+        #if word_index % 4 == 0: print("\n")
         #print("word %d:  %s" % (word_index, str(keyword_in_ints)))
         key_schedule.append(keyword_in_ints)
     num_rounds = 14
@@ -72,8 +72,7 @@ def gen_key_schedule_256(key_bv, subBytesTable):
         elif (i - (i//8)*8) == 4:
             key_words[i] = BitVector(size = 0)
             for j in range(4):
-                key_words[i] += BitVector(intVal = 
-                                 subBytesTable[key_words[i-1][8*j:8*j+8].intValue()], size = 8)
+                key_words[i] += BitVector(intVal = subBytesTable[key_words[i-1][8*j:8*j+8].intValue()], size = 8)
             key_words[i] ^= key_words[i-8] 
         elif ((i - (i//8)*8) > 4) and ((i - (i//8)*8) < 8):
             key_words[i] = key_words[i-8] ^ key_words[i-1]
@@ -110,7 +109,7 @@ def gen_decrypt_table():
 
 #Generate state array
 def gen_state_array(inputBlock):
-    stateArray = [[0 for x in range(4)] for x in range(4)]
+    stateArray = [[0 for x in range(4)] for y in range(4)]
     
     for i in range(4):
         for j in range(4):
@@ -118,7 +117,7 @@ def gen_state_array(inputBlock):
     return stateArray
 
 
-#This function is for step 1, substituting the bytes of the state array with the corresponding bytes of the SBox
+#This function is for step 1, substituting the bytes of the state array with the corresponding bytes of the SBox. TA Helped with this
 def subBytes(stateArray):
     for i in range(4):
         for j in range(4):
@@ -217,6 +216,7 @@ def addRoundKey(roundKey, state_array):
             tempVar += state_array[x][y]
             
     tempVar ^= roundKey
+
        
     return tempVar
     
@@ -226,6 +226,10 @@ if __name__ == '__main__':
     if sys.argv[1] == '-e':
         #Open plaintext file
         inFileName = sys.argv[2]
+        
+        #Open the output file
+        outFile = sys.argv[4]
+        outFile = open(outFile, 'w')
         
         #Get the encryption key from the text file
         encryptionKeyFile = sys.argv[3]
@@ -255,31 +259,39 @@ if __name__ == '__main__':
             #Generate state array
             state_array = gen_state_array(bitvec)
             
-            if (numRound == 0):
-                #Pre encrypt task of XOR
-                state_array = firstRoundKey(key_words, state_array, numRound)
-            numRound += 1
+            #Pre encrypt task of XOR
+            state_array = addRoundKey(round_keys[0], state_array)
+            
+            #Get state_array back to an actual state_array
+            state_array = gen_state_array(state_array)
+            # tempVar = BitVector(size=0)
+            # for u in range(4):
+            #     for v in range(4):
+            #         tempVar += state_array[u][v]
+            # print(tempVar)
             #14 round of AES encryption
-            for j in range(0,1):
+            for j in range(14):
                 outputBlock = subBytes(state_array)
                 output2 = shiftRows(outputBlock)
-                output3 = mixColumns(output2)
-                output4 = addRoundKey(round_keys[j+1], output3)
-                print("testing: ", output4)
-        #write output4 to the outfile or add to one var to create one big var to output after all loops are done
-        finalOutput += output4
+                if j != 13:
+                    output3 = mixColumns(output2)
+                    output4 = addRoundKey(round_keys[j+1], output3)
+                else:
+                    output4 = addRoundKey(round_keys[j+1], output2)
+                #print(round_keys[j+1].get_bitvector_in_hex())
+                
+                #print(output4)
+                state_array = gen_state_array(output4)
+
+            #write output4 to the outfile or add to one var to create one big var to output after all loops are done
+            for u in range(4):
+                for v in range(4):
+                    outFile.write(state_array[u][v].get_bitvector_in_hex())
+            #output4.write_to_file(outFile)
+            
         
                 
         
-        
-        
-        
-        
-        
-        output = encrypt(inFileName, encryptionKey)
-        outFile = sys.argv[4]
-        outFile = open(outFile, 'w')
-        outFile.write(output.get_hex_string_from_bitvector())
         outFile.close()
         encryptionKeyFile.close()
     
