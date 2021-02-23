@@ -22,20 +22,20 @@ def key_schedule_main(key_bv):
     key_words = []
     key_words = gen_key_schedule_256(key_bv, subBytesTable)
     key_schedule = []
-    print("\nEach 32-bit word of the key schedule is shown as a sequence of 4 one-byte integers:")
+    #print("\nEach 32-bit word of the key schedule is shown as a sequence of 4 one-byte integers:")
     for word_index,word in enumerate(key_words):
         keyword_in_ints = []
         for i in range(4):
             keyword_in_ints.append(word[i*8:i*8+8].intValue())
         if word_index % 4 == 0: print("\n")
-        print("word %d:  %s" % (word_index, str(keyword_in_ints)))
+        #print("word %d:  %s" % (word_index, str(keyword_in_ints)))
         key_schedule.append(keyword_in_ints)
     num_rounds = 14
     round_keys = [None for i in range(num_rounds+1)]
     for i in range(num_rounds+1):
         round_keys[i] = (key_words[i*4] + key_words[i*4+1] + key_words[i*4+2] + key_words[i*4+3])
     
-    return round_keys
+    return round_keys, key_words
 
 #This function was taken from the Lecture 8 code "gen_key_schedule.py"
 def gee(keyword, round_constant, subBytesTable):
@@ -64,7 +64,7 @@ def gen_key_schedule_256(key_bv, subBytesTable):
         key_words[i] = key_bv[i*32 : i*32 + 32]
     for i in range(8,60):
         if i%8 == 0:
-            print(key_words[7])
+            #print(key_words[7])
             kwd, round_constant = gee(key_words[i-1], round_constant, subBytesTable)
             key_words[i] = key_words[i-8] ^ kwd
         elif (i - (i//8)*8) < 4:
@@ -122,10 +122,8 @@ def gen_state_array(inputBlock):
 def subBytes(stateArray):
     for i in range(4):
         for j in range(4):
-            temp1 = stateArray[i][j]
-            [row, col] = temp1.divide_into_two()
-            stateArray[i][j] = subBytesTable[(row*16)+col]
-            
+            stateArray[i][j] = BitVector(intVal=subBytesTable[int(stateArray[i][j])])
+
     return stateArray
 
 
@@ -159,7 +157,7 @@ def shiftRows(stateArray):
     
 
 
-#This function is for step 3, mix the colums
+#This function is for step 3, mix the columns
 def mixColumns(stateArray):
     #Create array to place new values after column mix
     endArray = [[0 for x in range(4)] for x in range(4)]
@@ -175,28 +173,27 @@ def mixColumns(stateArray):
             endArray[i][3] = (b.gf_multiply_modular(stateArray[0][3], AES_modular, n)) ^ (c.gf_multiply_modular(stateArray[1][3], AES_modular, n)) ^ (a.gf_multiply_modular(stateArray[2][3], AES_modular, n)) ^ (a.gf_multiply_modular(stateArray[3][3], AES_modular, n))
     
 
+
+def addRoundKey(key_words, state_array):
+    temp = BitVector(size=0)
+    for i in range(4):
+        for j in range(4):
+            state_array[i][j] ^= key_words[i][8 * j:8 + (8 * j)]
+            
+            
+    for x in range(4):
+        for y in range(4):
+            temp += state_array[x][y]
+    print(temp)
+    return state_array
+    
+    
 if __name__ == '__main__':
     if len(sys.argv) != 5:
         sys.exit('Incorrect number of arguments, please try again')
     if sys.argv[1] == '-e':
-        #Open plaintext file and put it into an array of hexadecimal.
+        #Open plaintext file
         inFileName = sys.argv[2]
-        inFile = open(inFileName)
-        plainText = inFile.read()
-        plainTextArray = plainText.encode("utf-8").hex()
-        plainTextBV = BitVector(textstring = plainText)
-        plaintextarray = BitVector(hexstring = plainTextBV.get_bitvector_in_hex())
-        
-        # bv = BitVector(filename = inFileName)
-        # while (bv.more_to_read):
-        #     bitvec = bv.read_bits_from_file(128)
-        # if len(bitvec) < 128:
-        #     temp = BitVector(intVal = 0, size = 128-len(bitvec))
-        #     bitvec = bitvec + temp
-            
-        #Generate SBox for encryption
-        gen_subbytes_table()
-        
         
         #Get the encryption key from the text file
         encryptionKeyFile = sys.argv[3]
@@ -204,19 +201,41 @@ if __name__ == '__main__':
         encryptionKey = encryptionKeyFile.read()
         key_bv = BitVector(textstring = encryptionKey)
         
+        
+        #Generate SBox for encryption
+        gen_subbytes_table()
+        
+        
         #Generate the round keys
-        round_keys = key_schedule_main(key_bv)
+        round_keys, key_words = key_schedule_main(key_bv)
         
         
-        #14 round of AES encryption
-        for i in range(0,len(plaintextarray),128):
-            inputBlock = plaintextarray[i:i+128]
-            for j in range(14):
-                outputBlock = subBytes(inputBlock)
+        bv = BitVector(filename = inFileName)
+        while (bv.more_to_read):
+            bitvec = bv.read_bits_from_file(128)
+            if len(bitvec) < 128:
+                temp = BitVector(intVal = 0, size = 128-len(bitvec))
+                bitvec = bitvec + temp
+   
+            #Pre encrypt task
+            #bitvec = addRoundKey(round_keys, bitvec)
+            #Generate state array
+            state_array = gen_state_array(bitvec)
+            
+            state_array = addRoundKey(key_words, state_array)
+        
+            #14 round of AES encryption
+            for j in range(0,1):
+                outputBlock = subBytes(state_array)
+                test = BitVector(size=0)
+                for x in range(4):
+                    for y in range(4):
+                        test += outputBlock[x][y]
+                print("This is my outputblock: " , test)
                 output2 = shiftRows(outputBlock)
-                output3 = mixCols(output2)
+                output3 = mixColumns(output2)
                 output4 = addRoundKey(output3)
-            #write output4 to the outfile or add to one var to create one big var to output after all loops are done
+        #write output4 to the outfile or add to one var to create one big var to output after all loops are done
         finalOutput += output4
         
                 
