@@ -65,7 +65,6 @@ def gen_key_schedule_256(key_bv, subBytesTable):
         key_words[i] = key_bv[i*32 : i*32 + 32]
     for i in range(8,60):
         if i%8 == 0:
-            #print(key_words[7])
             kwd, round_constant = gee(key_words[i-1], round_constant, subBytesTable)
             key_words[i] = key_words[i-8] ^ kwd
         elif (i - (i//8)*8) < 4:
@@ -202,13 +201,24 @@ def mixColumns(stateArray):
     untransposed = [list(x) for x in zip(*endArray)]
     return untransposed
 
-def addRoundKey(key_words, state_array):
+#Function to XOR the input state array with the first four words of the key schedule
+def firstRoundKey(key_words, state_array, numRound):
     for i in range(4):
         for j in range(4):
             state_array[i][j] ^= key_words[i][8 * j:8 + (8 * j)]
             
     return state_array
     
+#Function for adding the round key to the output of the previous step
+def addRoundKey(roundKey, state_array):
+    tempVar = BitVector(size=0)
+    for x in range(4):
+        for y in range(4):
+            tempVar += state_array[x][y]
+            
+    tempVar ^= roundKey
+       
+    return tempVar
     
 if __name__ == '__main__':
     if len(sys.argv) != 5:
@@ -230,8 +240,10 @@ if __name__ == '__main__':
         
         #Generate the round keys
         round_keys, key_words = key_schedule_main(key_bv)
-        
-        
+
+        #Variable to keep track of what round of AES it's on
+        numRound = 0
+        #Get BitVector object from input file
         bv = BitVector(filename = inFileName)
         while (bv.more_to_read):
             bitvec = bv.read_bits_from_file(128)
@@ -239,24 +251,21 @@ if __name__ == '__main__':
                 temp = BitVector(intVal = 0, size = 128-len(bitvec))
                 bitvec = bitvec + temp
    
-            #Pre encrypt task
-            #bitvec = addRoundKey(round_keys, bitvec)
+    
             #Generate state array
             state_array = gen_state_array(bitvec)
             
-            state_array = addRoundKey(key_words, state_array)
-        
+            if (numRound == 0):
+                #Pre encrypt task of XOR
+                state_array = firstRoundKey(key_words, state_array, numRound)
+            numRound += 1
             #14 round of AES encryption
             for j in range(0,1):
                 outputBlock = subBytes(state_array)
                 output2 = shiftRows(outputBlock)
                 output3 = mixColumns(output2)
-                testingVar = BitVector(size=0)
-                for x in range(4):
-                    for y in range(4):
-                        testingVar += output3[x][y]
-                print("testing: ", testingVar)
-                output4 = addRoundKey(output3)
+                output4 = addRoundKey(round_keys[j+1], output3)
+                print("testing: ", output4)
         #write output4 to the outfile or add to one var to create one big var to output after all loops are done
         finalOutput += output4
         
