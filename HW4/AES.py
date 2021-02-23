@@ -35,6 +35,7 @@ def key_schedule_main(key_bv):
     for i in range(num_rounds+1):
         round_keys[i] = (key_words[i*4] + key_words[i*4+1] + key_words[i*4+2] + key_words[i*4+3])
     
+    
     return round_keys, key_words
 
 #This function was taken from the Lecture 8 code "gen_key_schedule.py"
@@ -130,30 +131,36 @@ def subBytes(stateArray):
 
 #This function is for step 2, shifts the rows of the state array
 def shiftRows(stateArray):
+    
+    #Transpose the stateArray. Found this method on stackoverflow 
+    transposed = [list(x) for x in zip(*stateArray)]
     #Row 0 doesn't get shifted
     #Row 1 shifts to the left by 1
-    temp = stateArray[1][0]
-    stateArray[1][0] = stateArray[1][1]
-    stateArray[1][1] = stateArray[1][2]
-    stateArray[1][2] = stateArray[1][3]
-    stateArray[1][3] = temp
+    temp = transposed[1][0]
+    transposed[1][0] = transposed[1][1]
+    transposed[1][1] = transposed[1][2]
+    transposed[1][2] = transposed[1][3]
+    transposed[1][3] = temp
     
     #Row 2 shifts to the left by 2
-    temp = stateArray[2][1]
-    stateArray[2][0] = stateArray[2][2]
-    stateArray[2][1] = stateArray[2][3]
-    stateArray[2][2] = stateArray[2][0]
-    stateArray[2][3] = temp
+    temp = transposed[2][0]
+    temp1 = transposed[2][1]
+    transposed[2][0] = transposed[2][2]
+    transposed[2][1] = transposed[2][3]
+    transposed[2][2] = temp
+    transposed[2][3] = temp1
     
     #Row 3 shifts to the left by 3
-    temp = stateArray[3][0]
-    temp2 = stateArray[3][1]
-    stateArray[3][0] = stateArray[3][3]
-    stateArray[3][1] = temp
-    stateArray[3][3] = stateArray[3][2]
-    stateArray[3][2] = temp2
-    
-    return stateArray
+    temp = transposed[3][0]
+    temp2 = transposed[3][1]
+    transposed[3][0] = transposed[3][3]
+    transposed[3][1] = temp
+    transposed[3][3] = transposed[3][2]
+    transposed[3][2] = temp2
+       
+    #Untransposed using the same method as before, again found on stackoverflow
+    untransposed = [list(x) for x in zip(*transposed)]
+    return untransposed
     
 
 
@@ -162,16 +169,30 @@ def mixColumns(stateArray):
     #Create array to place new values after column mix
     endArray = [[0 for x in range(4)] for x in range(4)]
     n = 8
-    a = BitVector(hexstring = '0x01')
-    b = BitVector(hexstring = '0x02')
-    c = BitVector(hexstring = '0x03')
+    a = BitVector(hexstring = '01')
+    b = BitVector(hexstring = '02')
+    c = BitVector(hexstring = '03')
     for i in range(4):
         if i == 0:
             endArray[i][0] = (b.gf_multiply_modular(stateArray[0][0], AES_modular, n)) ^ (c.gf_multiply_modular(stateArray[1][0], AES_modular, n)) ^ (a.gf_multiply_modular(stateArray[2][0], AES_modular, n)) ^ (a.gf_multiply_modular(stateArray[3][0], AES_modular, n))
             endArray[i][1] = (b.gf_multiply_modular(stateArray[0][1], AES_modular, n)) ^ (c.gf_multiply_modular(stateArray[1][1], AES_modular, n)) ^ (a.gf_multiply_modular(stateArray[2][1], AES_modular, n)) ^ (a.gf_multiply_modular(stateArray[3][1], AES_modular, n))
             endArray[i][2] = (b.gf_multiply_modular(stateArray[0][2], AES_modular, n)) ^ (c.gf_multiply_modular(stateArray[1][2], AES_modular, n)) ^ (a.gf_multiply_modular(stateArray[2][2], AES_modular, n)) ^ (a.gf_multiply_modular(stateArray[3][2], AES_modular, n))
             endArray[i][3] = (b.gf_multiply_modular(stateArray[0][3], AES_modular, n)) ^ (c.gf_multiply_modular(stateArray[1][3], AES_modular, n)) ^ (a.gf_multiply_modular(stateArray[2][3], AES_modular, n)) ^ (a.gf_multiply_modular(stateArray[3][3], AES_modular, n))
-    
+        if i == 1:
+            endArray[i][0] = (a.gf_multiply_modular(stateArray[0][0], AES_modular, n)) ^ (b.gf_multiply_modular(stateArray[1][0], AES_modular, n)) ^ (c.gf_multiply_modular(stateArray[2][0], AES_modular, n)) ^ (a.gf_multiply_modular(stateArray[3][0], AES_modular, n))
+            endArray[i][1] = (a.gf_multiply_modular(stateArray[0][1], AES_modular, n)) ^ (b.gf_multiply_modular(stateArray[1][1], AES_modular, n)) ^ (c.gf_multiply_modular(stateArray[2][1], AES_modular, n)) ^ (a.gf_multiply_modular(stateArray[3][1], AES_modular, n))
+            endArray[i][2] = (a.gf_multiply_modular(stateArray[0][2], AES_modular, n)) ^ (b.gf_multiply_modular(stateArray[1][2], AES_modular, n)) ^ (c.gf_multiply_modular(stateArray[2][2], AES_modular, n)) ^ (a.gf_multiply_modular(stateArray[3][2], AES_modular, n))
+            endArray[i][3] = (a.gf_multiply_modular(stateArray[0][3], AES_modular, n)) ^ (b.gf_multiply_modular(stateArray[1][3], AES_modular, n)) ^ (c.gf_multiply_modular(stateArray[2][3], AES_modular, n)) ^ (a.gf_multiply_modular(stateArray[3][3], AES_modular, n))
+        if i == 2:
+            endArray[i][0] = (a.gf_multiply_modular(stateArray[0][0], AES_modular, n)) ^ (a.gf_multiply_modular(stateArray[1][0], AES_modular, n)) ^ (b.gf_multiply_modular(stateArray[2][0], AES_modular, n)) ^ (c.gf_multiply_modular(stateArray[3][0], AES_modular, n))
+            endArray[i][1] = (a.gf_multiply_modular(stateArray[0][1], AES_modular, n)) ^ (a.gf_multiply_modular(stateArray[1][1], AES_modular, n)) ^ (b.gf_multiply_modular(stateArray[2][1], AES_modular, n)) ^ (c.gf_multiply_modular(stateArray[3][1], AES_modular, n))
+            endArray[i][2] = (a.gf_multiply_modular(stateArray[0][2], AES_modular, n)) ^ (a.gf_multiply_modular(stateArray[1][2], AES_modular, n)) ^ (b.gf_multiply_modular(stateArray[2][2], AES_modular, n)) ^ (c.gf_multiply_modular(stateArray[3][2], AES_modular, n))
+            endArray[i][3] = (a.gf_multiply_modular(stateArray[0][3], AES_modular, n)) ^ (a.gf_multiply_modular(stateArray[1][3], AES_modular, n)) ^ (b.gf_multiply_modular(stateArray[2][3], AES_modular, n)) ^ (c.gf_multiply_modular(stateArray[3][3], AES_modular, n))
+        if i == 3:
+            endArray[i][0] = (c.gf_multiply_modular(stateArray[0][0], AES_modular, n)) ^ (a.gf_multiply_modular(stateArray[1][0], AES_modular, n)) ^ (a.gf_multiply_modular(stateArray[2][0], AES_modular, n)) ^ (b.gf_multiply_modular(stateArray[3][0], AES_modular, n))
+            endArray[i][1] = (c.gf_multiply_modular(stateArray[0][1], AES_modular, n)) ^ (a.gf_multiply_modular(stateArray[1][1], AES_modular, n)) ^ (a.gf_multiply_modular(stateArray[2][1], AES_modular, n)) ^ (b.gf_multiply_modular(stateArray[3][1], AES_modular, n))
+            endArray[i][2] = (c.gf_multiply_modular(stateArray[0][2], AES_modular, n)) ^ (a.gf_multiply_modular(stateArray[1][2], AES_modular, n)) ^ (a.gf_multiply_modular(stateArray[2][2], AES_modular, n)) ^ (b.gf_multiply_modular(stateArray[3][2], AES_modular, n))
+            endArray[i][3] = (c.gf_multiply_modular(stateArray[0][3], AES_modular, n)) ^ (a.gf_multiply_modular(stateArray[1][3], AES_modular, n)) ^ (a.gf_multiply_modular(stateArray[2][3], AES_modular, n)) ^ (b.gf_multiply_modular(stateArray[3][3], AES_modular, n))
 
 
 def addRoundKey(key_words, state_array):
@@ -221,14 +242,14 @@ if __name__ == '__main__':
             #14 round of AES encryption
             for j in range(0,1):
                 outputBlock = subBytes(state_array)
-                test = BitVector(size=0)
                 output2 = shiftRows(outputBlock)
+                testingVar = BitVector(size=0)
                 for x in range(4):
                     for y in range(4):
-                        test += output2[x][y]
-                print("This is my outputblock: " , test)
+                        testingVar += output2[x][y]
+                print("testing: ", testingVar)
                 output3 = mixColumns(output2)
-                #output4 = addRoundKey(output3)
+                output4 = addRoundKey(output3)
         #write output4 to the outfile or add to one var to create one big var to output after all loops are done
         finalOutput += output4
         
