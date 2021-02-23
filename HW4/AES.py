@@ -388,7 +388,7 @@ if __name__ == '__main__':
                 tempVar = BitVector(size=0)
                 for x in range(4):
                     for y in range(4):
-                        tempVar = outputBlock[x][y]
+                        tempVar += outputBlock[x][y]
                 print(tempVar)
                 output2 = invSubBytes(outputBlock)
                 if j != 13:
