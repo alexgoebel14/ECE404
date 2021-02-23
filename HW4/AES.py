@@ -172,28 +172,35 @@ def mixColumns(stateArray):
     a = BitVector(hexstring = '01')
     b = BitVector(hexstring = '02')
     c = BitVector(hexstring = '03')
+    
+    #Transpose the stateArray. Found this method on stackoverflow 
+    transposed = [list(x) for x in zip(*stateArray)]
+    
     for i in range(4):
         if i == 0:
-            endArray[i][0] = (b.gf_multiply_modular(stateArray[0][0], AES_modular, n)) ^ (c.gf_multiply_modular(stateArray[1][0], AES_modular, n)) ^ (a.gf_multiply_modular(stateArray[2][0], AES_modular, n)) ^ (a.gf_multiply_modular(stateArray[3][0], AES_modular, n))
-            endArray[i][1] = (b.gf_multiply_modular(stateArray[0][1], AES_modular, n)) ^ (c.gf_multiply_modular(stateArray[1][1], AES_modular, n)) ^ (a.gf_multiply_modular(stateArray[2][1], AES_modular, n)) ^ (a.gf_multiply_modular(stateArray[3][1], AES_modular, n))
-            endArray[i][2] = (b.gf_multiply_modular(stateArray[0][2], AES_modular, n)) ^ (c.gf_multiply_modular(stateArray[1][2], AES_modular, n)) ^ (a.gf_multiply_modular(stateArray[2][2], AES_modular, n)) ^ (a.gf_multiply_modular(stateArray[3][2], AES_modular, n))
-            endArray[i][3] = (b.gf_multiply_modular(stateArray[0][3], AES_modular, n)) ^ (c.gf_multiply_modular(stateArray[1][3], AES_modular, n)) ^ (a.gf_multiply_modular(stateArray[2][3], AES_modular, n)) ^ (a.gf_multiply_modular(stateArray[3][3], AES_modular, n))
+            endArray[i][0] = (b.gf_multiply_modular(transposed[0][0], AES_modulus, n)) ^ (c.gf_multiply_modular(transposed[1][0], AES_modulus, n)) ^ (a.gf_multiply_modular(transposed[2][0], AES_modulus, n)) ^ (a.gf_multiply_modular(transposed[3][0], AES_modulus, n))
+            endArray[i][1] = (b.gf_multiply_modular(transposed[0][1], AES_modulus, n)) ^ (c.gf_multiply_modular(transposed[1][1], AES_modulus, n)) ^ (a.gf_multiply_modular(transposed[2][1], AES_modulus, n)) ^ (a.gf_multiply_modular(transposed[3][1], AES_modulus, n))
+            endArray[i][2] = (b.gf_multiply_modular(transposed[0][2], AES_modulus, n)) ^ (c.gf_multiply_modular(transposed[1][2], AES_modulus, n)) ^ (a.gf_multiply_modular(transposed[2][2], AES_modulus, n)) ^ (a.gf_multiply_modular(transposed[3][2], AES_modulus, n))
+            endArray[i][3] = (b.gf_multiply_modular(transposed[0][3], AES_modulus, n)) ^ (c.gf_multiply_modular(transposed[1][3], AES_modulus, n)) ^ (a.gf_multiply_modular(transposed[2][3], AES_modulus, n)) ^ (a.gf_multiply_modular(transposed[3][3], AES_modulus, n))
         if i == 1:
-            endArray[i][0] = (a.gf_multiply_modular(stateArray[0][0], AES_modular, n)) ^ (b.gf_multiply_modular(stateArray[1][0], AES_modular, n)) ^ (c.gf_multiply_modular(stateArray[2][0], AES_modular, n)) ^ (a.gf_multiply_modular(stateArray[3][0], AES_modular, n))
-            endArray[i][1] = (a.gf_multiply_modular(stateArray[0][1], AES_modular, n)) ^ (b.gf_multiply_modular(stateArray[1][1], AES_modular, n)) ^ (c.gf_multiply_modular(stateArray[2][1], AES_modular, n)) ^ (a.gf_multiply_modular(stateArray[3][1], AES_modular, n))
-            endArray[i][2] = (a.gf_multiply_modular(stateArray[0][2], AES_modular, n)) ^ (b.gf_multiply_modular(stateArray[1][2], AES_modular, n)) ^ (c.gf_multiply_modular(stateArray[2][2], AES_modular, n)) ^ (a.gf_multiply_modular(stateArray[3][2], AES_modular, n))
-            endArray[i][3] = (a.gf_multiply_modular(stateArray[0][3], AES_modular, n)) ^ (b.gf_multiply_modular(stateArray[1][3], AES_modular, n)) ^ (c.gf_multiply_modular(stateArray[2][3], AES_modular, n)) ^ (a.gf_multiply_modular(stateArray[3][3], AES_modular, n))
+            endArray[i][0] = (a.gf_multiply_modular(transposed[0][0], AES_modulus, n)) ^ (b.gf_multiply_modular(transposed[1][0], AES_modulus, n)) ^ (c.gf_multiply_modular(transposed[2][0], AES_modulus, n)) ^ (a.gf_multiply_modular(transposed[3][0], AES_modulus, n))
+            endArray[i][1] = (a.gf_multiply_modular(transposed[0][1], AES_modulus, n)) ^ (b.gf_multiply_modular(transposed[1][1], AES_modulus, n)) ^ (c.gf_multiply_modular(transposed[2][1], AES_modulus, n)) ^ (a.gf_multiply_modular(transposed[3][1], AES_modulus, n))
+            endArray[i][2] = (a.gf_multiply_modular(transposed[0][2], AES_modulus, n)) ^ (b.gf_multiply_modular(transposed[1][2], AES_modulus, n)) ^ (c.gf_multiply_modular(transposed[2][2], AES_modulus, n)) ^ (a.gf_multiply_modular(transposed[3][2], AES_modulus, n))
+            endArray[i][3] = (a.gf_multiply_modular(transposed[0][3], AES_modulus, n)) ^ (b.gf_multiply_modular(transposed[1][3], AES_modulus, n)) ^ (c.gf_multiply_modular(transposed[2][3], AES_modulus, n)) ^ (a.gf_multiply_modular(transposed[3][3], AES_modulus, n))
         if i == 2:
-            endArray[i][0] = (a.gf_multiply_modular(stateArray[0][0], AES_modular, n)) ^ (a.gf_multiply_modular(stateArray[1][0], AES_modular, n)) ^ (b.gf_multiply_modular(stateArray[2][0], AES_modular, n)) ^ (c.gf_multiply_modular(stateArray[3][0], AES_modular, n))
-            endArray[i][1] = (a.gf_multiply_modular(stateArray[0][1], AES_modular, n)) ^ (a.gf_multiply_modular(stateArray[1][1], AES_modular, n)) ^ (b.gf_multiply_modular(stateArray[2][1], AES_modular, n)) ^ (c.gf_multiply_modular(stateArray[3][1], AES_modular, n))
-            endArray[i][2] = (a.gf_multiply_modular(stateArray[0][2], AES_modular, n)) ^ (a.gf_multiply_modular(stateArray[1][2], AES_modular, n)) ^ (b.gf_multiply_modular(stateArray[2][2], AES_modular, n)) ^ (c.gf_multiply_modular(stateArray[3][2], AES_modular, n))
-            endArray[i][3] = (a.gf_multiply_modular(stateArray[0][3], AES_modular, n)) ^ (a.gf_multiply_modular(stateArray[1][3], AES_modular, n)) ^ (b.gf_multiply_modular(stateArray[2][3], AES_modular, n)) ^ (c.gf_multiply_modular(stateArray[3][3], AES_modular, n))
+            endArray[i][0] = (a.gf_multiply_modular(transposed[0][0], AES_modulus, n)) ^ (a.gf_multiply_modular(transposed[1][0], AES_modulus, n)) ^ (b.gf_multiply_modular(transposed[2][0], AES_modulus, n)) ^ (c.gf_multiply_modular(transposed[3][0], AES_modulus, n))
+            endArray[i][1] = (a.gf_multiply_modular(transposed[0][1], AES_modulus, n)) ^ (a.gf_multiply_modular(transposed[1][1], AES_modulus, n)) ^ (b.gf_multiply_modular(transposed[2][1], AES_modulus, n)) ^ (c.gf_multiply_modular(transposed[3][1], AES_modulus, n))
+            endArray[i][2] = (a.gf_multiply_modular(transposed[0][2], AES_modulus, n)) ^ (a.gf_multiply_modular(transposed[1][2], AES_modulus, n)) ^ (b.gf_multiply_modular(transposed[2][2], AES_modulus, n)) ^ (c.gf_multiply_modular(transposed[3][2], AES_modulus, n))
+            endArray[i][3] = (a.gf_multiply_modular(transposed[0][3], AES_modulus, n)) ^ (a.gf_multiply_modular(transposed[1][3], AES_modulus, n)) ^ (b.gf_multiply_modular(transposed[2][3], AES_modulus, n)) ^ (c.gf_multiply_modular(transposed[3][3], AES_modulus, n))
         if i == 3:
-            endArray[i][0] = (c.gf_multiply_modular(stateArray[0][0], AES_modular, n)) ^ (a.gf_multiply_modular(stateArray[1][0], AES_modular, n)) ^ (a.gf_multiply_modular(stateArray[2][0], AES_modular, n)) ^ (b.gf_multiply_modular(stateArray[3][0], AES_modular, n))
-            endArray[i][1] = (c.gf_multiply_modular(stateArray[0][1], AES_modular, n)) ^ (a.gf_multiply_modular(stateArray[1][1], AES_modular, n)) ^ (a.gf_multiply_modular(stateArray[2][1], AES_modular, n)) ^ (b.gf_multiply_modular(stateArray[3][1], AES_modular, n))
-            endArray[i][2] = (c.gf_multiply_modular(stateArray[0][2], AES_modular, n)) ^ (a.gf_multiply_modular(stateArray[1][2], AES_modular, n)) ^ (a.gf_multiply_modular(stateArray[2][2], AES_modular, n)) ^ (b.gf_multiply_modular(stateArray[3][2], AES_modular, n))
-            endArray[i][3] = (c.gf_multiply_modular(stateArray[0][3], AES_modular, n)) ^ (a.gf_multiply_modular(stateArray[1][3], AES_modular, n)) ^ (a.gf_multiply_modular(stateArray[2][3], AES_modular, n)) ^ (b.gf_multiply_modular(stateArray[3][3], AES_modular, n))
+            endArray[i][0] = (c.gf_multiply_modular(transposed[0][0], AES_modulus, n)) ^ (a.gf_multiply_modular(transposed[1][0], AES_modulus, n)) ^ (a.gf_multiply_modular(transposed[2][0], AES_modulus, n)) ^ (b.gf_multiply_modular(transposed[3][0], AES_modulus, n))
+            endArray[i][1] = (c.gf_multiply_modular(transposed[0][1], AES_modulus, n)) ^ (a.gf_multiply_modular(transposed[1][1], AES_modulus, n)) ^ (a.gf_multiply_modular(transposed[2][1], AES_modulus, n)) ^ (b.gf_multiply_modular(transposed[3][1], AES_modulus, n))
+            endArray[i][2] = (c.gf_multiply_modular(transposed[0][2], AES_modulus, n)) ^ (a.gf_multiply_modular(transposed[1][2], AES_modulus, n)) ^ (a.gf_multiply_modular(transposed[2][2], AES_modulus, n)) ^ (b.gf_multiply_modular(transposed[3][2], AES_modulus, n))
+            endArray[i][3] = (c.gf_multiply_modular(transposed[0][3], AES_modulus, n)) ^ (a.gf_multiply_modular(transposed[1][3], AES_modulus, n)) ^ (a.gf_multiply_modular(transposed[2][3], AES_modulus, n)) ^ (b.gf_multiply_modular(transposed[3][3], AES_modulus, n))
 
+    #Untransposed using the same method as before, again found on stackoverflow
+    untransposed = [list(x) for x in zip(*endArray)]
+    return untransposed
 
 def addRoundKey(key_words, state_array):
     for i in range(4):
@@ -243,12 +250,12 @@ if __name__ == '__main__':
             for j in range(0,1):
                 outputBlock = subBytes(state_array)
                 output2 = shiftRows(outputBlock)
+                output3 = mixColumns(output2)
                 testingVar = BitVector(size=0)
                 for x in range(4):
                     for y in range(4):
-                        testingVar += output2[x][y]
+                        testingVar += output3[x][y]
                 print("testing: ", testingVar)
-                output3 = mixColumns(output2)
                 output4 = addRoundKey(output3)
         #write output4 to the outfile or add to one var to create one big var to output after all loops are done
         finalOutput += output4
