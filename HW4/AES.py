@@ -113,11 +113,11 @@ def gen_state_array(inputBlock):
     
     for i in range(4):
         for j in range(4):
-            stateArray[i][j] = inputBlock[32*i + 8*j: 32*i + 8*(j+1)]
+            stateArray[i][j] = inputBlock[32*i + 8*j: 32*i + 8*(j+1)] #Help from lecture 8
     return stateArray
 
 
-#This function is for step 1, substituting the bytes of the state array with the corresponding bytes of the SBox. TA Helped with this
+#This function is for encrypt step 1, substituting the bytes of the state array with the corresponding bytes of the SBox. TA Helped with this
 def subBytes(stateArray):
     for i in range(4):
         for j in range(4):
@@ -125,9 +125,17 @@ def subBytes(stateArray):
 
     return stateArray
 
+#This function is for decrypt step 2, substituting the bytes of the state array with the corresponding bytes of the SBox. TA Helped with this
+def invSubBytes(stateArray):
+    for i in range(4):
+        for j in range(4):
+            stateArray[i][j] = BitVector(intVal=invSubBytesTable[int(stateArray[i][j])], size = 8)
+
+    return stateArray
 
 
-#This function is for step 2, shifts the rows of the state array
+
+#This function is for encrypt step 2, shifts the rows of the state array
 def shiftRows(stateArray):
     
     #Transpose the stateArray. Found this method on stackoverflow 
@@ -161,6 +169,38 @@ def shiftRows(stateArray):
     return untransposed
     
 
+#This function is for decrypt step 1, shifts the rows of the state array
+def invShiftRows(stateArray):
+    
+    #Transpose the stateArray. Found this method on stackoverflow 
+    transposed = [list(x) for x in zip(*stateArray)]
+    #Row 0 doesn't get shifted
+    #Row 1 shifts to the right by 1
+    temp = transposed[1][0]
+    temp2 = transposed[1][1]
+    transposed[1][0] = transposed[1][3]
+    transposed[1][1] = temp
+    transposed[1][3] = transposed[1][2]
+    transposed[1][2] = temp2
+    
+    #Row 2 shifts to the right by 2
+    temp = transposed[2][0]
+    temp1 = transposed[2][1]
+    transposed[2][0] = transposed[2][2]
+    transposed[2][1] = transposed[2][3]
+    transposed[2][2] = temp
+    transposed[2][3] = temp1
+    
+    #Row 3 shifts to the right by 3
+    temp = transposed[3][0]
+    transposed[3][0] = transposed[3][1]
+    transposed[3][1] = transposed[3][2]
+    transposed[3][2] = transposed[3][3]
+    transposed[3][3] = temp
+       
+    #Untransposed using the same method as before, again found on stackoverflow
+    untransposed = [list(x) for x in zip(*transposed)]
+    return untransposed
 
 #This function is for step 3, mix the columns
 def mixColumns(stateArray):
@@ -200,13 +240,13 @@ def mixColumns(stateArray):
     untransposed = [list(x) for x in zip(*endArray)]
     return untransposed
 
-#Function to XOR the input state array with the first four words of the key schedule
-def firstRoundKey(key_words, state_array, numRound):
-    for i in range(4):
-        for j in range(4):
-            state_array[i][j] ^= key_words[i][8 * j:8 + (8 * j)]
+# #Function to XOR the input state array with the first four words of the key schedule
+# def firstRoundKey(key_words, state_array, numRound):
+#     for i in range(4):
+#         for j in range(4):
+#             state_array[i][j] ^= key_words[i][8 * j:8 + (8 * j)]
             
-    return state_array
+#     return state_array
     
 #Function for adding the round key to the output of the previous step
 def addRoundKey(roundKey, state_array):
@@ -264,12 +304,9 @@ if __name__ == '__main__':
             
             #Get state_array back to an actual state_array
             state_array = gen_state_array(state_array)
-            # tempVar = BitVector(size=0)
-            # for u in range(4):
-            #     for v in range(4):
-            #         tempVar += state_array[u][v]
-            # print(tempVar)
-            #14 round of AES encryption
+            
+            
+            #14 rounds of AES encryption
             for j in range(14):
                 outputBlock = subBytes(state_array)
                 output2 = shiftRows(outputBlock)
@@ -278,20 +315,99 @@ if __name__ == '__main__':
                     output4 = addRoundKey(round_keys[j+1], output3)
                 else:
                     output4 = addRoundKey(round_keys[j+1], output2)
-                #print(round_keys[j+1].get_bitvector_in_hex())
-                
-                #print(output4)
+
                 state_array = gen_state_array(output4)
 
             #write output4 to the outfile or add to one var to create one big var to output after all loops are done
             for u in range(4):
                 for v in range(4):
                     outFile.write(state_array[u][v].get_bitvector_in_hex())
-            #output4.write_to_file(outFile)
+
             
         
                 
         
         outFile.close()
         encryptionKeyFile.close()
+        
+        
+    #Decrypt
+    if sys.argv[1] == '-d':
+        #Open plaintext file
+        inFileName = sys.argv[2]
+        inFile = open(inFileName)
+        inFileHex = inFile.read()
+        
+        #Open the output file
+        outFile = sys.argv[4]
+        outFile = open(outFile, 'w')
+        
+        #Get the encryption key from the text file
+        encryptionKeyFile = sys.argv[3]
+        encryptionKeyFile = open(encryptionKeyFile)
+        encryptionKey = encryptionKeyFile.read()
+        key_bv = BitVector(textstring = encryptionKey)
+        
+        
+        #Generate SBox for encryption
+        gen_subbytes_table()
+        
+        
+        #Generate SBox for decryption
+        gen_decrypt_table()
+        
+        
+        #Generate the round keys
+        round_keys, key_words = key_schedule_main(key_bv)
+
+        #Variable to keep track of what round of AES it's on
+        numRound = 0
+        #Get BitVector object from input file
+        bv = BitVector(hexstring = inFileHex)
+        count=0
+        while (count < bv.size):
+            bitvec = bv[count:count+128]
+            if len(bitvec) < 128:
+                temp = BitVector(intVal = 0, size = 128-len(bitvec))
+                bitvec = bitvec + temp
+                    
+                    
+            #Generate state array
+            state_array = gen_state_array(bitvec)
+                    
+            #Pre decrypt task of XOR
+            state_array = addRoundKey(round_keys[14], state_array)
+            print("state:", state_array.get_bitvector_in_hex())
+            #Get state_array back to an actual state_array
+            state_array = gen_state_array(state_array)
+                    
+                    
+            #14 rounds of AES decryption
+            for j in range(0,1):
+                outputBlock = invShiftRows(state_array)
+                tempVar = BitVector(size=0)
+                for x in range(4):
+                    for y in range(4):
+                        tempVar = outputBlock[x][y]
+                print(tempVar)
+                output2 = invSubBytes(outputBlock)
+                if j != 13:
+                    output3 = mixColumns(output2)
+                    output4 = addRoundKey(round_keys[j+1], output3)
+                else:
+                    output4 = addRoundKey(round_keys[j+1], output2)
+                                
+                state_array = gen_state_array(output4)
+                                
+                #write output4 to the outfile or add to one var to create one big var to output after all loops are done
+                for u in range(4):
+                    for v in range(4):
+                        outFile.write(state_array[u][v].get_bitvector_in_hex())
+                count+= 128                        
+                                        
+                
+        
+        outFile.close()
+        encryptionKeyFile.close()
+    
     
