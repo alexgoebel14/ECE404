@@ -377,7 +377,7 @@ if __name__ == '__main__':
                     
             #Pre decrypt task of XOR
             state_array = addRoundKey(round_keys[14], state_array)
-            print("state:", state_array.get_bitvector_in_hex())
+            
             #Get state_array back to an actual state_array
             state_array = gen_state_array(state_array)
                     
@@ -385,12 +385,12 @@ if __name__ == '__main__':
             #14 rounds of AES decryption
             for j in range(0,1):
                 outputBlock = invShiftRows(state_array)
+                output2 = invSubBytes(outputBlock)
                 tempVar = BitVector(size=0)
                 for x in range(4):
                     for y in range(4):
-                        tempVar += outputBlock[x][y]
-                print(tempVar)
-                output2 = invSubBytes(outputBlock)
+                        tempVar += output2[x][y]
+                print(tempVar.get_bitvector_in_hex())
                 if j != 13:
                     output3 = mixColumns(output2)
                     output4 = addRoundKey(round_keys[j+1], output3)
