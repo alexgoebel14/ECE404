@@ -24,7 +24,6 @@ def gcd(a,b):
     return a
 
 if __name__ == '__main__':
-    #TODO: Need to change this check to make sure it accounts for key gen or encrypt/decrypt
     if len(sys.argv) != 7:
         print(len(sys.argv))
         sys.exit('Incorrect number of arguments, please try again')

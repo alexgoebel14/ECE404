@@ -2,7 +2,7 @@
 Homework Number: 6
 Name: Alex Goebel
 ECN Login: goebel2
-Due Date: 3/8/2021
+Due Date: 3/9/2021
 '''
 
 #!/usr/bin/env python3
@@ -54,7 +54,6 @@ def gcd(a,b):
     return a
 
 if __name__ == '__main__':
-    #TODO: Need to change this check to make sure it accounts for key gen or encrypt/decrypt
     if len(sys.argv) != 4 and len(sys.argv) != 6:
         print(len(sys.argv))
         sys.exit('Incorrect number of arguments, please try again')
