@@ -113,8 +113,8 @@ if __name__ == '__main__':
         #Get n from p and q
         n = pNum * qNum
         
-        #Get the totient of n
-        totient = getTotient(pNum, qNum)
+        # #Get the totient of n
+        # totient = getTotient(pNum, qNum)
         
         
         #Get BitVector object from input file
