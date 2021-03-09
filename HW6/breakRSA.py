@@ -42,7 +42,6 @@ if __name__ == '__main__':
         enc2File = open(sys.argv[4], 'w')
         enc3File = open(sys.argv[5], 'w')
         nValsFile = open(sys.argv[6], 'w')
-        print(sys.argv[6])
         
         #Set e to the correct value for this assignment
         e = 3
@@ -61,16 +60,12 @@ if __name__ == '__main__':
                 pNum = generator.findPrime()
                 qNum = generator.findPrime()
                 if(gcd((pNum-1), e) != 1):
-                    print(gcd((pNum-1), e))
                     pNum = qNum
                     continue
                 if(gcd((qNum-1), e) != 1):
                     pNum = qNum
                     continue 
-                
-            # #Get the totient of n
-            # totient = getTotient(pNum, qNum)
-            # totients.append(totient)
+
             
             #Get n from p and q
             nVals.append(pNum * qNum)
@@ -78,11 +73,7 @@ if __name__ == '__main__':
             
         for n in nVals:
             nValsFile.write(str(n) + '\n')
-        
-        # #Get n vals from file
-        # nVals = []
-        # for n in nValsFile.splitlines():
-        #     nVals.append(int(n))
+
         
         
         #Encrypt message once for each of the 3 keys
@@ -138,10 +129,6 @@ if __name__ == '__main__':
         crackedOutputFile = open(sys.argv[6], 'w')
         
         
-                
-        # pNum = int(open(sys.argv[3]).read())
-        # qNum = int(open(sys.argv[4]).read())
-        # outFile = open(sys.argv[5], 'w')
 
         #Set e to the correct value for this assignment
         e = 3
@@ -176,20 +163,6 @@ if __name__ == '__main__':
         temp2 = BitVector(intVal = nVals[2])
         x3 = temp.multiplicative_inverse(temp2).int_val() * M3
         
-        # #Get the totient of n
-        # totient = getTotient(pNum, qNum)
-        
-        
-        # #Compute d
-        # temp = BitVector(intVal = e)
-        # temp2 = BitVector(intVal = totient)
-        # d = temp.multiplicative_inverse(temp2)
-        # d = d.int_val()
-        
-        
-        
-        #Get BitVector object from input file
-        #bv = BitVector(hexstring = encryptedFile)
     
 
         #Get 256 bit chunks to decrypt
