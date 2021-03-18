@@ -1,0 +1,69 @@
+The exam will cover topics starting from Stream Ciphers (Lecture 9 from 9.6 onward) to Hashing (Lecture 15, which we will be covering tomorrow).
+https://engineering.purdue.edu/kak/compsec/NewLectures/Lecture9.pdf
+https://engineering.purdue.edu/kak/compsec/NewLectures/Lecture10.pdf
+https://engineering.purdue.edu/kak/compsec/NewLectures/Lecture11.pdf
+https://engineering.purdue.edu/kak/compsec/NewLectures/Lecture12.pdf
+https://engineering.purdue.edu/kak/compsec/NewLectures/Lecture13.pdf
+https://engineering.purdue.edu/kak/compsec/NewLectures/Lecture14.pdf
+https://engineering.purdue.edu/kak/compsec/NewLectures/Lecture15.pdf
+
+Other important topics include:
+
+Random Number Generation:
+INFO FOUND IN LECTURE 10, 10.4 PAGE 26
+To be considered truly random, a sequence of numbers must
+exhibit the following two properties:
+
+	Uniform Distribution: This means that all the numbers in a
+	designated range must occur equally often.
+
+	Independence: This means that if we know some or all the number up
+	to a certain point in a random sequence, we should not be able to
+	predict the next one (or any of the future ones).
+	
+10.5 PRNGs, Linear Congruential Generators:
+This algorithm is used for generating pseudorandom numbers for non-security applications
+
+Starting from a seed X0, a sequence of pseudorandom numbers
+X0, X1, ...., Xi, ... is generated using the recursion:
+	Xn+1 = (a · Xn + c) mod m
+where
+	m the modulus m > 0
+	a the multiplier 0 < a < m
+	c the increment 0 = c < m
+	X0 the seed 0 < X0 < m
+10.5 Explains why this is not a very secure way of generating numbers (page 29 starts this explanation, pg 31 has a paragraph at the end as well)
+
+When a PRNG sequence is secure:
+A pseudorandom sequence of numbers is cryptographically secure if it is difficult for an attacker to predict the next number from the numbers already in his/her possession.
+
+
+X9.31:
+10.6
+
+Is there a price to pay for the cryptographic security of ANSI X9.17/X9.31?
+Yes, it is a much slower way to generate pseudorandom numbers. That makes this approach unsuitable for many applications that require randomized inputs
+
+CSRNGs:
+Cryptographically secure pseudorandom number generator
+10.6
+
+
+TRNGs:
+True random number generator
+Works without seeds, unlike PRNGs
+Based on the fact that only analog phenomena can be trusted to produce truly random numbers
+Entropy source: any source that is capable of yielding a TRULY random stream of 1's and 0's
+10.9 discusses software entropy sources
+	
+	
+Primality Testing
+
+RSA and relevant concepts (e.g. Chinese Remainder Theorem)
+
+Diffie Hellman
+
+ECC
+
+Paradox Problem:
+https://en.wikipedia.org/wiki/Birthday_problem

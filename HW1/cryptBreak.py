@@ -7,6 +7,8 @@ Due Date: 1/28/2021
 
 #!/usr/bin/env python3
 import sys
+import BitVector
+print (BitVector.__version__)
 from BitVector import *
 
 
@@ -52,7 +54,6 @@ def cryptBreak(ciphertextFile, key_bv):
 
 if __name__ == '__main__':
     
-        
     ciphertextFile = 'encrypted.txt'
         
     keyRangeMax = 2 ** 16
