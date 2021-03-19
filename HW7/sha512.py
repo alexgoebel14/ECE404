@@ -152,10 +152,6 @@ if __name__ == '__main__':
     
     hashForTest = sha512(messageToHash)
     
-    trueHash = hashlib.sha512(b"This file is a test file that will be sent through my program for ECE 404 and the to output will be the hash of this message. The hash comes from using SHA512, as implemented in my Python program.").hexdigest()
-    print(hashForTest)
-    print(trueHash)
-    
     outFile.write(sha512(messageToHash))
     outFile.close()
     
